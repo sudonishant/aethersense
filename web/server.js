@@ -236,10 +236,21 @@ function cleanup() {
   process.exit(0);
 }
 
+// Handle startup errors gracefully (e.g. port in use)
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n[Server Error] Port ${PORT} is already in use by another process!`);
+    console.error(`Please kill the conflicting process using port ${PORT} and try again.\n`);
+    process.exit(1);
+  } else {
+    console.error('[Server Error]', err);
+  }
+});
+
 // Start Listening
 server.listen(PORT, () => {
   console.log(`==================================================`);
-  console.log(`  WiFi-Thermal-Spatial-Mapper Web Portal Ready    `);
+  console.log(`         AetherSense Web Portal Ready             `);
   console.log(`  Server Local URL: http://localhost:${PORT}        `);
   console.log(`==================================================`);
 });
