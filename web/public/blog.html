@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engineering Log | Volumetric WiFi Thermal Radar & Triangulation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #060608;
+      --card-bg: rgba(255, 255, 255, 0.02);
+      --border-color: rgba(255, 255, 255, 0.06);
+      --text-primary: #f5f5f7;
+      --text-secondary: #86868b;
+      --apple-blue: #0a84ff;
+      --apple-green: #30d158;
+      --apple-red: #ff453a;
+      --apple-orange: #ff9f0a;
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+      font-family: var(--font-family);
+      line-height: 1.7;
+      padding: 60px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Floating Navigation HUD */
+    .toc-card {
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 40px;
+      backdrop-filter: blur(30px);
+    }
+
+    .toc-card h3 {
+      font-size: 0.9rem;
+      letter-spacing: 1.5px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+
+    .toc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 12px;
+    }
+
+    .toc-grid a {
+      color: var(--apple-blue);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .toc-grid a:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    header {
+      margin-bottom: 50px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 40px;
+    }
+
+    header h1 {
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-bottom: 15px;
+      background: linear-gradient(135deg, #ffffff 40%, var(--apple-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
+    }
+
+    header .author-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    header .author-badge {
+      color: var(--apple-blue);
+      font-weight: 700;
+      font-family: 'Fira Code', monospace;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-top: 50px;
+      margin-bottom: 20px;
+      color: #ffffff;
+      border-left: 5px solid var(--apple-blue);
+      padding-left: 15px;
+      letter-spacing: -0.5px;
+    }
+
+    h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-top: 30px;
+      margin-bottom: 12px;
+      color: #f5f5f7;
+    }
+
+    p {
+      margin-bottom: 22px;
+      color: #d2d2d7;
+      font-size: 1.08rem;
+      font-weight: 400;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 30px;
+      backdrop-filter: blur(25px);
+    }
+
+    .formula-container {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(10, 132, 255, 0.12);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 25px 0;
+      text-align: center;
+    }
+
+    .formula-math {
+      font-family: 'Fira Code', monospace;
+      font-size: 1.3rem;
+      color: var(--apple-blue);
+      margin-bottom: 10px;
+    }
+
+    .formula-desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+    }
+
+    .math-var {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    code {
+      display: block;
+      background: #000000;
+      border-radius: 12px;
+      padding: 20px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9rem;
+      overflow-x: auto;
+      margin: 20px 0;
+      border: 1px solid var(--border-color);
+      color: #a9b2c3;
+      line-height: 1.5;
+    }
+
+    .keyword { color: #dd7575; font-weight: 600; }
+    .function { color: #7ec699; }
+    .number { color: #f5a04c; }
+    .comment { color: #5c6370; font-style: italic; }
+
+    ul, ol {
+      margin-left: 25px;
+      margin-bottom: 25px;
+      color: #d2d2d7;
+    }
+
+    li {
+      margin-bottom: 10px;
+      font-size: 1.05rem;
+    }
+
+    strong {
+      color: #ffffff;
+    }
+
+    .highlight-box {
+      border-left: 4px solid var(--apple-orange);
+      background: rgba(255, 159, 10, 0.03);
+      padding: 18px 24px;
+      border-radius: 0 12px 12px 0;
+      margin: 25px 0;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-right: 8px;
+    }
+
+    .badge-blue { background: rgba(10, 132, 255, 0.12); color: var(--apple-blue); border: 1px solid rgba(10, 132, 255, 0.25); }
+    .badge-green { background: rgba(48, 209, 88, 0.12); color: var(--apple-green); border: 1px solid rgba(48, 209, 88, 0.25); }
+    .badge-red { background: rgba(255, 69, 58, 0.12); color: var(--apple-red); border: 1px solid rgba(255, 69, 58, 0.25); }
+
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    .matrix-table th, .matrix-table td {
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      border-bottom: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .matrix-table th {
+      color: #ffffff;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .matrix-table tr:hover {
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    footer {
+      margin-top: 80px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 40px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Whitepaper: Building an Apple-Style 3D Volumetric WiFi Heatmap & Triangulation Radar</h1>
+      <div class="author-row">
+        <span>Principal Architect: <span class="author-badge">sudonishant</span></span>
+        <span>Repository: <a href="https://github.com/sudonishant/aethersense" target="_blank" style="color: var(--apple-blue); font-weight: 600; text-decoration: none;">sudonishant/aethersense</a></span>
+        <span>Version: 2.0.0 (Release)</span>
+      </div>
+    </header>
+
+    <!-- Table of Contents -->
+    <div class="toc-card">
+      <h3>Document Index</h3>
+      <div class="toc-grid">
+        <a href="#abstract">1. Executive Abstract</a>
+        <a href="#architecture">2. 3-Tier Pipeline Flow</a>
+        <a href="#physics">3. Distance Physics & Sliders</a>
+        <a href="#triangulation">4. Triangulation Math</a>
+        <a href="#geiger">5. Geiger Sonar Audio</a>
+        <a href="#raycasting">6. Raycast Obstructions</a>
+        <a href="#setup">7. Compiling & Setup</a>
+      </div>
+    </div>
+
+    <main>
+      <!-- Section 1 -->
+      <section id="abstract">
+        <h2>1. Executive Abstract & Mission Statement</h2>
+        <p>In modern telecommunications, radio frequency (RF) mapping has traditionally been limited to static 2D floor plans. Waves scatter, reflect off metallic objects, and attenuate heavily when passing through concrete slabs. This leaves engineers blind to structural multipath bottlenecks.</p>
+        <p>Our mission with the <strong>sudonishant Spatial Mapper & Radar</strong> was to create a hardware-accelerated, cross-platform volumetric analysis tool. By taking raw signal metrics from standard network interfaces, combining them with log-distance path loss calibration constants, and rendering them in an Apple Space Gray styled WebGL environment, we make RF fields tangible in 3D space.</p>
+      </section>
+
+      <!-- Section 2 -->
+      <section id="architecture">
+        <h2>2. Detailed 3-Tier Pipeline Flow</h2>
+        <p>To support high-frequency polling (10Hz sweeps) without blocking the client browser thread, the architecture separates responsibilities into three distinct sandboxed modules:</p>
+        
+        <div class="card">
+          <h3>Layer A: Low-Overhead C++ Daemon (wifi_scanner_cli)</h3>
+          <p>Written in native C++17, this daemon bypasses bulky user-space CLI programs by querying kernel structures directly:
+          <ul>
+            <li><strong>Linux (proc/net/wireless)</strong>: Opens descriptor nodes to read real-time link quality, raw RSSI, and noise floors directly from the sysfs subsystem.</li>
+            <li><strong>macOS (CoreWLAN)</strong>: Links against Apple's private native frameworks to sweep Channels, RSSI, and BSSIDs at millisecond frequencies.</li>
+            <li><strong>Windows (Wlanapi)</strong>: Initiates client handles on the wireless interfaces to retrieve structured network information frames.</li>
+          </ul>
+          The daemon parses raw telemetry buffers and prints line-separated JSON data directly to the stdout console.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Layer B: Node.js IPC & WebSocket Bridge (server.js)</h3>
+          <p>The backend Node server executes the C++ scanner as a child subprocess, capturing stdout buffers on-the-fly.
+          <ul>
+            <li><strong>Memory Guard</strong>: Prunes the loaded scan history on startup to a maximum of 1,500 points, preventing browser GPU overflow.</li>
+            <li><strong>Debounced Persistence</strong>: Performs asynchronous disk writes to <code>scan_history.json</code> using a 2-second debounce timer to prevent hardware write flooding.</li>
+            <li><strong>Broadcaster Channel</strong>: Manages real-time WebSocket connection pools to sync scanning points across multiple client sessions simultaneously.</li>
+          </ul>
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Layer C: WebGL 3D Visualization Port (app.js)</h3>
+          <p>The client interface uses hardware-accelerated WebGL through Three.js:
+          <ul>
+            <li><strong>Voxel Point Cloud Grid</strong>: Dynamically maps volumetric data points colored via custom thermal palette lookup tables (Ironbow, Rainbow, White/Black Hot).</li>
+            <li><strong>Multipath Reflection Rays</strong>: Calculates ray paths bouncing between walker nodes and the transmitter.</li>
+            <li><strong>Doppler Waterfall</strong>: Displays spectrograms of subcarrier CSI metrics to alert engineers to human breathing rates (12-18 BPM).</li>
+          </ul>
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 3 -->
+      <section id="physics">
+        <h2>3. Distance Physics & Calibration Sliders</h2>
+        <p>To convert logarithmic received signal power (RSSI in dBm) into geometric distance (meters), we implement the <strong>Log-Distance Path Loss Model</strong>, a standard RF propagation equation:</p>
+        
+        <div class="formula-container">
+          <div class="formula-math">RSSI = A - 10 · N · log<sub>10</sub>(d)</div>
+          <div class="formula-desc">Log-distance path loss representation</div>
+        </div>
+
+        <p>Solving this mathematically for distance <span class="math-var">d</span> yields:</p>
+
+        <div class="formula-container">
+          <div class="formula-math">d = 10<sup>(A - RSSI) / (10 · N)</sup></div>
+          <div class="formula-desc">Transformed propagation formula</div>
+        </div>
+
+        <p>Because every building material blocks RF waves differently, we integrated interactive calibration sliders on-screen in the HUD sidebar:
+        <ul>
+          <li><strong>Reference RSSI (A)</strong>: The reference signal strength logged at exactly 1 meter from the router. Typically ranges from <span class="math-var">-35 dBm</span> (high gain) to <span class="math-var">-55 dBm</span> (low gain).</li>
+          <li><strong>Path Loss Exponent (N)</strong>: Dictates how fast the signal decays. Adjusted by material densities:</li>
+        </ul>
+        </p>
+
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th>Environment Material</th>
+              <th>Typical Exponent (N)</th>
+              <th>Signal Decay Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>💨 Open Air / Free Space</td>
+              <td>2.0</td>
+              <td>Standard spherical decay</td>
+            </tr>
+            <tr>
+              <td>🚪 Residential Drywall / Wood partitions</td>
+              <td>2.8 to 3.2</td>
+              <td>Moderate attenuation</td>
+            </tr>
+            <tr>
+              <td>🧱 Thick Concrete / Brick walls</td>
+              <td>3.8 to 4.2</td>
+              <td>Severe attenuation</td>
+            </tr>
+            <tr>
+              <td>🛡️ Faraday Cage / Metal enclosures</td>
+              <td>> 4.5</td>
+              <td>Near-complete blockage</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="highlight-box">
+          <p><strong>Code Integration</strong>: Sliders directly adjust <code>pathLossN</code> and <code>refSignalA</code> in <code>app.js</code>, updating calculations in real-time:</p>
+          <code>
+function estimateDistance(rssi) {
+  const distance = Math.pow(10, (refSignalA - rssi) / (10 * pathLossN));
+  // Clamp boundaries to prevent walker from flying off grid
+  return Math.max(1.0, Math.min(12.5, distance));
+}</code>
+        </div>
+      </section>
+
+      <!-- Section 4 -->
+      <section id="triangulation">
+        <h2>4. Mathematical Centroid Triangulation Algorithm</h2>
+        <p>Tracking the location of an unknown transmitter requires gathering coordinates from multiple directions. To solve this, our locator predictor runs a <strong>Weighted Centroid Algorithm</strong>.</p>
+        <p>Since decibel scales are logarithmic, we convert RSSI values back into a linear power scale ratio to act as geometric weights <span class="math-var">W</span>:</p>
+
+        <div class="formula-container">
+          <div class="formula-math">W<sub>i</sub> = 10<sup>(RSSI<sub>i</sub> + 100) / 10</sup></div>
+          <div class="formula-desc">RSSI logarithm-to-linear conversion</div>
+        </div>
+
+        <p>The estimated transmitter coordinates \((X_{est}, Z_{est})\) are computed as the weighted averages of all logged coordinates \((X_i, Z_i)\):</p>
+
+        <div class="formula-container">
+          <div class="formula-math">X<sub>est</sub> = &Sigma;(W<sub>i</sub> · X<sub>i</sub>) / &Sigma;W<sub>i</sub> &nbsp;&nbsp;|&nbsp;&nbsp; Z<sub>est</sub> = &Sigma;(W<sub>i</sub> · Z<sub>i</sub>) / &Sigma;W<sub>i</sub></div>
+          <div class="formula-desc">Weighted centroid calculations</div>
+        </div>
+
+        <p>This centroid calculation updates in real-time as you walk, moving the glowing blue wireframe target mesh closer to the physical transmitter coordinates.</p>
+      </section>
+
+      <!-- Section 5 -->
+      <section id="geiger">
+        <h2>5. Proximity Geiger Sound (Web Audio API)</h2>
+        <p>To facilitate blind search patterns, we mapped RSSI decibels to oscillator rate clicks using the HTML5 **Web Audio API**:
+        <ul>
+          <li>An <code>AudioContext</code> is initialized upon user activation.</li>
+          <li>An <code>OscillatorNode</code> generates raw sine waves at a base pitch of \(500\text{ Hz}\), scaling up to \(1200\text{ Hz}\) (higher pitch) as signal improves.</li>
+          <li>A <code>GainNode</code> decays the volume exponentially over \(45\text{ ms}\) to create a crisp Geiger click.</li>
+          <li>Beep delays are adjusted from \(80\text{ ms}\) (strong signal) to \(1000\text{ ms}\) (weak signal) in a recursive loop.</li>
+        </ul>
+        </p>
+      </section>
+
+      <!-- Section 6 -->
+      <section id="raycasting">
+        <h2>6. Three.js Raycast Obstruction Calculations</h2>
+        <p>The mapper monitors signal attenuation caused by wall obstruction:
+        <ul>
+          <li>A virtual ray is cast from the walker coordinate directly to the estimated router coordinate.</li>
+          <li>We check for intersections against wall objects:
+            <code>raycaster.intersectObjects(collisionWalls)</code>.
+          </li>
+          <li>If intersections are found, we estimate wall thicknesses and attenuate the baseline signal by \(12\text{ dBm}\) per partition wall.</li>
+          <li>When attenuation exceeds safe thresholds, a red-vignette **Haptic Alert** flashes around the screen.</li>
+        </ul>
+        </p>
+      </section>
+
+      <!-- Section 7 -->
+      <section id="setup">
+        <h2>7. Installation & Deployment Guide</h2>
+        <p>The workspace includes a one-command initialization script `setup.sh` that automates C++ compilation and Node packages installation:</p>
+        <code>
+# 1. Give execution permission to setup script
+chmod +x setup.sh
+
+# 2. Run the initialization script
+./setup.sh
+
+# 3. Open the browser to load the dashboard
+xdg-open http://localhost:8080</code>
+        <p>Toggle **Virtual Emu** mode in the HUD sidebar if running on systems without a physical wireless card, or select **Real Card** to start parsing hardware streams!</p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Whitepaper registered under sudonishant. MIT License.</p>
+    </footer>
+  </div>
+</body>
+</html>
