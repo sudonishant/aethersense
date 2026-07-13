@@ -1,0 +1,19 @@
+{
+  "name": "sudonishant-spatial-mapper-web",
+  "version": "1.0.0",
+  "description": "High performance 3D WiFi Volumetric Spatial Mapper and Radarserved from native C++ daemon",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "sudonishant",
+  "license": "MIT"
+}

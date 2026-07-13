@@ -1,0 +1,20 @@
+# Compilation Binaries and Build Output
+/build/
+/wifi_scanner_cli
+/web/wifi_scanner_cli
+
+# Dependency Directories
+node_modules/
+/web/node_modules/
+
+# Local databases and scan files
+scan_history.json
+/web/scan_history.json
+*.log
+
+# OS metadata
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.gemini/

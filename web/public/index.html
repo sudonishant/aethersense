@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="sudonishant spatial mapper - High performance 3D WiFi volumetric thermal radar visualization.">
+  <title>sudonishant | Spatial Mapper & Radar</title>
+  <!-- Google Fonts for Futuristic Theme -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Apple style subtle watermark -->
+  <div class="apple-watermark">sudonishant</div>
+
+  <!-- FLIR-style Viewfinder Scope Overlay -->
+  <div class="viewfinder-overlay">
+    <!-- Blinking REC Indicator -->
+    <div class="vf-rec-container">
+      <span class="vf-rec-dot"></span>
+      <span class="vf-rec-text">REC</span>
+      <span id="vf-timestamp" class="font-mono">00:00:00.00</span>
+    </div>
+    
+    <!-- Top Right Stats -->
+    <div class="vf-status-container">
+      <span class="vf-status-item font-mono">BAT: 89%</span>
+    </div>
+ 
+    <!-- Central Targeting Reticle -->
+    <div class="vf-center-target">
+      <div class="reticle-crosshair"></div>
+      <div class="reticle-box"></div>
+      <div class="reticle-data">
+        <div class="reticle-row"><span class="lbl font-mono">TGT:</span><span id="vf-rssi" class="val">-60dBm</span></div>
+        <div class="reticle-row"><span class="lbl font-mono">RNG:</span><span id="vf-dist" class="val">5.4m</span></div>
+      </div>
+    </div>
+    
+    <!-- Camera Viewport Corner Brackets -->
+    <div class="vf-corner top-left"></div>
+    <div class="vf-corner top-right"></div>
+    <div class="vf-corner bottom-left"></div>
+    <div class="vf-corner bottom-right"></div>
+ 
+    <!-- Scanning Raster & Vignette Effects -->
+    <div class="scanlines"></div>
+    <div class="thermal-vignette"></div>
+  </div>
+ 
+  <!-- Background Canvas for Three.js 3D Viewport -->
+  <div id="canvas-container"></div>
+ 
+  <!-- Real-time Occlusion Warning Overlay -->
+  <div id="occlusion-alert" class="hidden">
+    <div class="alert-content">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-title">SIGNAL OBSTRUCTION DETECTED</div>
+      <div class="alert-desc">CRITICAL SIGNAL ATTENUATION. PROBABLE WALL OR OBSTACLE DETECTED.</div>
+    </div>
+  </div>
+ 
+  <!-- Main HUD Layer -->
+  <div class="hud-container">
+    
+    <!-- Top Bar Header (Minimal) -->
+    <header class="hud-header glass-card">
+      <div class="logo">
+        <span class="pulse-dot active" id="connection-status"></span>
+        <h1 class="apple-logo-title" id="logo-title-editable" contenteditable="true" title="Click to edit branding title">sudonishant <span class="logo-sub">// spatial mapper</span></h1>
+        <span id="badge-source" class="badge source-hardware">REAL HARDWARE</span>
+      </div>
+      <div class="top-meta">
+        <div class="meta-item">
+          <span class="label">SCAN RATE</span>
+          <span class="val" id="scan-rate">10 Hz</span>
+        </div>
+        <div class="meta-item">
+          <span class="label">INTERFACES</span>
+          <span class="val" id="hud-interface">wlan0</span>
+        </div>
+      </div>
+    </header>
+ 
+    <!-- Left Side: Controls Panel -->
+    <aside class="hud-left glass-card">
+      <!-- Quick Launch Presets -->
+      <div class="card-section">
+        <h2>QUICK LAUNCH</h2>
+        <div class="preset-buttons-container grid-preset-buttons">
+          <button id="btn-preset-mapping" class="preset-btn">
+            <span class="icon">🧱</span>
+            <div class="btn-text">
+              <strong>3D MAPPING</strong>
+              <span>Auto-Build Voxel Map</span>
+            </div>
+          </button>
+          <button id="btn-preset-tracking" class="preset-btn">
+            <span class="icon">📍</span>
+            <div class="btn-text">
+              <strong>LOCATION TRACE</strong>
+              <span>Trace Walk Trajectory</span>
+            </div>
+          </button>
+          <button id="btn-preset-security" class="preset-btn">
+            <span class="icon">🛡️</span>
+            <div class="btn-text">
+              <strong>SECURITY SWEEP</strong>
+              <span>Channel Conflict Monitor</span>
+            </div>
+          </button>
+          <button id="btn-preset-sonar" class="preset-btn">
+            <span class="icon">🔊</span>
+            <div class="btn-text">
+              <strong>SIGNAL SONAR</strong>
+              <span>Audio Geiger Proximity</span>
+            </div>
+          </button>
+        </div>
+      </div>
+ 
+      <!-- Data Source Selector -->
+      <div class="card-section">
+        <h2>DATA SOURCE</h2>
+        <div class="source-toggles">
+          <button id="btn-source-hw" class="source-btn active">
+            <span class="icon">🔌</span>
+            <span>Real Card</span>
+          </button>
+          <button id="btn-source-emu" class="source-btn">
+            <span class="icon">🔮</span>
+            <span>Virtual Emu</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scan Modes -->
+      <div class="card-section">
+        <h2>SCAN MODES</h2>
+        <div class="mode-toggles">
+          <button id="btn-mode-1" class="mode-btn active">
+            <span class="icon">📡</span>
+            <div class="btn-text">
+              <strong>MODE 1</strong>
+              <span>Stationary Radar</span>
+            </div>
+          </button>
+          <button id="btn-mode-2" class="mode-btn">
+            <span class="icon">🚶</span>
+            <div class="btn-text">
+              <strong>MODE 2</strong>
+              <span>Warwalking Grid</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Walking Model -->
+      <div class="card-section">
+        <h2>WALKING MODEL</h2>
+        <div class="walk-model-toggles">
+          <button id="btn-walk-manual" class="walk-model-btn active">
+            <span class="icon">🕹️</span>
+            <span>Manual</span>
+          </button>
+          <button id="btn-walk-auto" class="walk-model-btn">
+            <span class="icon">🤖</span>
+            <span>Auto-Pilot</span>
+          </button>
+          <button id="btn-walk-lidar" class="walk-model-btn">
+            <span class="icon">🔄</span>
+            <span>LiDAR</span>
+          </button>
+        </div>
+        <!-- Walker Speed and height mapping -->
+        <div class="slider-group" style="margin-top: 10px;">
+          <div class="slider-label-row">
+            <span>Autopilot Patrol Speed</span>
+            <span id="txt-walk-speed" class="font-mono text-cyan">1.0x</span>
+          </div>
+          <input type="range" id="slide-walk-speed" min="0.5" max="5.0" step="0.5" value="1.0">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span>Walker Elevation (Y)</span>
+            <span id="txt-walk-elevation" class="font-mono text-cyan">0.5m</span>
+          </div>
+          <input type="range" id="slide-walk-elevation" min="-3.0" max="5.0" step="0.1" value="0.5">
+        </div>
+      </div>
+ 
+      <!-- Thermal Palette dropdown -->
+      <div class="card-section">
+        <h2>THERMAL SPECTRAL PALETTE</h2>
+        <div class="palette-container">
+          <select id="select-palette" class="palette-dropdown font-mono">
+            <option value="ironbow" selected>🔥 IRONBOW</option>
+            <option value="rainbow">🌈 RAINBOW</option>
+            <option value="whitehot">❄️ WHITE HOT</option>
+            <option value="blackhot">🕶️ BLACK HOT</option>
+          </select>
+        </div>
+      </div>
+ 
+      <!-- Router and path loss Calibration sliders -->
+      <div class="card-section">
+        <h2>SPATIAL PATH LOSS CALIBRATION</h2>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span>Router X (East/West)</span>
+            <span id="txt-router-x" class="font-mono text-cyan">0.0m</span>
+          </div>
+          <input type="range" id="slide-router-x" min="-15" max="15" step="0.5" value="0">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span>Router Z (North/South)</span>
+            <span id="txt-router-z" class="font-mono text-cyan">-6.0m</span>
+          </div>
+          <input type="range" id="slide-router-z" min="-15" max="15" step="0.5" value="-6">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span>Path Loss Exponent (N)</span>
+            <span id="txt-path-loss" class="font-mono text-cyan">2.0</span>
+          </div>
+          <input type="range" id="slide-path-loss" min="1.5" max="4.5" step="0.1" value="2.0">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span>1m Reference RSSI (A)</span>
+            <span id="txt-ref-rssi" class="font-mono text-cyan">-40dBm</span>
+          </div>
+          <input type="range" id="slide-ref-rssi" min="-30" max="-85" step="1" value="-40">
+        </div>
+      </div>
+ 
+      <!-- RF Countermeasures & eco parameters -->
+      <div class="card-section">
+        <h2>RF COUNTERMEASURES & ECO</h2>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span>Transmit Power</span>
+            <span id="txt-tx-power" class="font-mono text-cyan">100%</span>
+          </div>
+          <input type="range" id="slide-tx-power" min="10" max="100" step="5" value="100">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span>Shielding Obstacles</span>
+          </div>
+          <select id="select-shielding" class="palette-dropdown font-mono">
+            <option value="air" selected>💨 None (Open Air)</option>
+            <option value="concrete">🧱 Thick Concrete (+12dBm)</option>
+            <option value="faraday">🛡️ Faraday Shield (+35dBm)</option>
+          </select>
+        </div>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span>Frequency Resolution</span>
+          </div>
+          <select id="select-freq-band" class="palette-dropdown font-mono">
+            <option value="2.4">📶 2.4 GHz</option>
+            <option value="5.0" selected>⚡ 5.0 GHz</option>
+            <option value="6.0">🔬 6.0 GHz</option>
+          </select>
+        </div>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span>Render Mode (FPS Limit)</span>
+          </div>
+          <select id="select-fps-limit" class="palette-dropdown font-mono">
+            <option value="60" selected>⚡ Max Perf (60 FPS)</option>
+            <option value="30">🔋 Battery Saver (30 FPS)</option>
+            <option value="15">💤 Eco Mode (15 FPS)</option>
+          </select>
+        </div>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span>Voxel Resolution Size</span>
+            <span id="txt-voxel-size" class="font-mono text-cyan">0.8m</span>
+          </div>
+          <input type="range" id="slide-voxel-size" min="0.3" max="2.0" step="0.1" value="0.8">
+        </div>
+      </div>
+ 
+      <!-- File Operations & Clear Actions -->
+      <div class="card-section actions">
+        <button id="btn-clear-nodes" class="action-btn danger">Clear Voxel Map</button>
+        <button id="btn-clear-trail" class="action-btn secondary">Clear Walk Trails</button>
+        <button id="btn-reset-cam" class="action-btn secondary">Reset Camera Angle</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 8px; margin-top: 5px;">
+          <button id="btn-export-json" class="action-btn secondary" style="padding: 8px;">💾 Export JSON</button>
+          <button id="btn-import-trigger" class="action-btn secondary" style="padding: 8px;">📁 Load Map</button>
+        </div>
+        <input type="file" id="input-import-file" style="display: none;" accept=".json">
+      </div>
+    </aside>
+ 
+    <!-- Right Side: Compact Telemetry & Real-Time Statistics -->
+    <aside class="hud-right glass-card">
+      <div class="card-section telemetry">
+        <h2>LIVE TELEMETRY</h2>
+        
+        <!-- RSSI -->
+        <div class="metric-group main-metric">
+          <div class="metric-label">SIGNAL POWER (RSSI)</div>
+          <div class="metric-value-row">
+            <span id="rssi-value" class="thermal-text">-65</span>
+            <span class="unit">dBm</span>
+          </div>
+          <div class="rssi-bar-container">
+            <div id="rssi-bar-fill" class="rssi-bar-fill"></div>
+          </div>
+        </div>
+
+        <!-- Trend Line Chart -->
+        <div class="metric-group">
+          <div class="metric-label">SIGNAL HISTORY TREND (60S)</div>
+          <canvas id="canvas-signal-trend" height="60" style="margin-top: 5px; width: 100%; border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; background: rgba(0,0,0,0.25);"></canvas>
+        </div>
+
+        <!-- Geiger Counter & Performance rating -->
+        <div class="metric-group" style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="sub-label">GEIGER AUDIO</span>
+            <button id="btn-audio-geiger" class="action-btn secondary" style="width: auto; padding: 4px 10px; font-size: 0.65rem; margin: 0;">🔊 Sonar Off</button>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="sub-label">PERFORMANCE RATING</span>
+            <span id="perf-rating" class="badge" style="background: rgba(48,209,88,0.12); border: 1px solid #30d158; color: #30d158; font-size: 0.65rem;">EXCELLENT</span>
+          </div>
+        </div>
+
+        <!-- Connection Statistics Info Card -->
+        <div class="metric-group">
+          <div class="metric-label">CONNECTED AP DETAILS</div>
+          <div class="grid-metrics" style="margin-top: 5px; grid-template-columns: 1fr 1fr;">
+            <div class="metric-box">
+              <span class="label">SSID</span>
+              <span class="val text-truncate font-mono" id="tel-ssid">Home_WiFi</span>
+            </div>
+            <div class="metric-box">
+              <span class="label">CHANNEL</span>
+              <span class="val font-mono" id="tel-channel">11</span>
+            </div>
+            <div class="metric-box">
+              <span class="label">BSSID</span>
+              <span class="val text-truncate font-mono" id="tel-bssid">00:DE:AD:BE:EF:88</span>
+            </div>
+            <div class="metric-box">
+              <span class="label">NOISE</span>
+              <span class="val font-mono" id="tel-noise">-95 dBm</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Triangulation Router Location Predictor -->
+        <div class="metric-group">
+          <div class="metric-label">ROUTER POSITION PREDICTOR</div>
+          <div class="grid-metrics" style="margin-top: 5px; grid-template-columns: 1fr 1fr;">
+            <div class="metric-box">
+              <span class="label">PREDICTED XYZ</span>
+              <span class="val font-mono" id="router-est-pos" style="font-size: 0.72rem; color: #0a84ff;">X: 0.00 | Y: 0.50 | Z: -6.00</span>
+            </div>
+            <div class="metric-box">
+              <span class="label">CONFIDENCE RATING</span>
+              <span class="val font-mono" id="router-confidence" style="color: #30d158; font-weight: 700;">100%</span>
+            </div>
+          </div>
+        </div>
+ 
+        <!-- Classified Structures -->
+        <div class="metric-group">
+          <div class="metric-label">CLASSIFIED STRUCTURES</div>
+          <div class="grid-metrics" style="margin-top: 5px; grid-template-columns: 1fr 1fr 1fr;">
+            <div class="metric-box">
+              <span class="label">🧱 WALLS</span>
+              <span class="val font-mono" id="count-walls" style="color: #ff453a !important; font-size: 1.0rem; font-weight: 700;">0</span>
+            </div>
+            <div class="metric-box">
+              <span class="label">📦 OBJ</span>
+              <span class="val font-mono" id="count-objects" style="color: #ff9f0a !important; font-size: 1.0rem; font-weight: 700;">0</span>
+            </div>
+            <div class="metric-box">
+              <span class="label">💨 FREE</span>
+              <span class="val font-mono" id="count-spaces" style="color: #30d158 !important; font-size: 1.0rem; font-weight: 700;">0</span>
+            </div>
+          </div>
+          <div id="density-analytics-box" style="margin-top: 8px; font-size: 0.62rem; color: var(--text-secondary); font-family: monospace;">Avg Signal: -- | Std Dev: --</div>
+        </div>
+ 
+        <!-- Distance Telemetry -->
+        <div class="metric-group distance-telemetry">
+          <div class="sub-metric-row">
+            <div>
+              <span class="sub-label">SIGNAL DIST</span>
+              <div class="sub-val"><span id="val-signal-dist">0.0</span> <span class="sub-unit">m</span></div>
+            </div>
+            <div>
+              <span class="sub-label">GEOM DIST</span>
+              <div class="sub-val"><span id="val-geom-dist">0.0</span> <span class="sub-unit">m</span></div>
+            </div>
+          </div>
+          <div class="obstruction-alert-container">
+            <span class="sub-label">OBSTRUCTION THICKNESS</span>
+            <div class="obstruction-bar-wrapper">
+              <div id="obstruction-bar-fill" class="obstruction-bar-fill" style="width: 0%"></div>
+            </div>
+            <div class="obstruction-text-row">
+              <span id="txt-obstruction-percent">0%</span>
+              <span id="txt-obstruction-status" class="status-clear font-mono">CLEAR</span>
+            </div>
+          </div>
+        </div>
+ 
+        <!-- Link Quality -->
+        <div class="metric-group">
+          <div class="metric-label">LINK QUALITY</div>
+          <div class="quality-circle-container">
+            <svg class="quality-ring" width="100" height="100">
+              <circle class="ring-bg" cx="50" cy="50" r="42"/>
+              <circle class="ring-fill" id="quality-ring-fill" cx="50" cy="50" r="42"/>
+            </svg>
+            <div class="ring-label">
+              <span id="quality-percent">78</span><span class="percent-sign">%</span>
+            </div>
+          </div>
+        </div>
+ 
+        <!-- CSI Monitor -->
+        <div class="metric-group csi-container">
+          <div class="metric-label">CSI CHANNEL STATE INFORMATION</div>
+          <canvas id="canvas-csi-waves" width="200" height="42"></canvas>
+          <canvas id="canvas-csi-waterfall" width="200" height="42"></canvas>
+          <div class="csi-doppler-wrapper" style="margin-top: 8px; padding-top: 8px;">
+            <div class="doppler-row">
+              <span class="sub-label">MOTION</span>
+              <span id="csi-status-badge" class="badge csi-stationary font-mono">BREATHING</span>
+            </div>
+            <div class="doppler-row">
+              <span class="sub-label">RESP</span>
+              <span class="font-mono text-cyan" id="csi-breathing-rate">14 BPM</span>
+            </div>
+            <canvas id="canvas-breathing-wave" width="200" height="24"></canvas>
+          </div>
+        </div>
+ 
+      </div>
+    </aside>
+ 
+    <!-- Floating Bottom-Center Panel: Nearby Available Access Points Table -->
+    <div class="nearby-networks-card glass-card">
+      <div class="networks-header">
+        <span class="title">NEARBY DETECTED NETWORKS</span>
+        <div class="search-wrap">
+          <input type="text" id="nearby-search" placeholder="Filter SSID..." class="font-mono">
+        </div>
+      </div>
+      <div class="table-container">
+        <table id="table-nearby-networks">
+          <thead>
+            <tr>
+              <th style="width: 80px;">STATUS</th>
+              <th>SSID</th>
+              <th class="font-mono">MAC ADDRESS (BSSID)</th>
+              <th style="width: 80px;">SIGNAL</th>
+              <th style="width: 70px;">CHAN</th>
+              <th style="width: 70px;">FREQ</th>
+              <th style="width: 100px;">EST. DISTANCE</th>
+            </tr>
+          </thead>
+          <tbody id="table-body-networks">
+            <!-- Populated dynamically via app.js -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Thermal Color Scale Legend -->
+    <div class="thermal-legend glass-card">
+      <span class="legend-title font-mono">SIGNAL SPECTRUM:</span>
+      <div class="legend-scale-wrapper">
+        <span class="scale-text col-weak">WEAK</span>
+        <div class="scale-bar"></div>
+        <span class="scale-text col-strong">STRONG</span>
+      </div>
+    </div>
+ 
+    <!-- Bottom HUD Bar -->
+    <footer class="hud-bottom glass-card">
+      <div class="status-feed">
+        <span class="console-label">SYSTEM_LOG //</span>
+        <span class="feed-text" id="hud-console">System ready. Waiting for live Wi-Fi data...</span>
+      </div>
+      <div class="walk-pos-hud">
+        <span>WALKER: </span>
+        <span class="font-mono text-cyan" id="hud-walk-pos">X: 0.00 | Y: 0.50 | Z: 0.00</span>
+      </div>
+    </footer>
+ 
+  </div>
+ 
+  <!-- CDN scripts for Three.js & Controls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
