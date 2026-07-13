@@ -608,7 +608,8 @@ void RenderEngine::renderScene(float time) {
     glEnableVertexAttribArray(1);
 
     // Grid color: Sleek dark cyan/blue
-    glUniform3fv(colorLoc, 1, &Math3D::Vec3(0.05f, 0.15f, 0.25f).x);
+    Math3D::Vec3 gridColor(0.05f, 0.15f, 0.25f);
+    glUniform3fv(colorLoc, 1, &gridColor.x);
     glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(gridData.size() / 4));
     
     glDeleteVertexArrays(1, &gridVAO);
@@ -632,7 +633,8 @@ void RenderEngine::renderScene(float time) {
         // Dynamic Warning Plane representing obstacle presence
         if (m_obstacleAlertAlpha > 0.0f) {
             glUniform1i(m_useLUTLoc, 0); // Flat color
-            glUniform3fv(colorLoc, 1, &Math3D::Vec3(1.0f, 0.0f, 0.1f).x);
+            Math3D::Vec3 alertColor(1.0f, 0.0f, 0.1f);
+            glUniform3fv(colorLoc, 1, &alertColor.x);
             
             float warningQuad[] = {
                 // Tri 1
@@ -683,7 +685,8 @@ void RenderEngine::renderScene(float time) {
 
         // Draw physical walker's current position pointer
         glUniform1i(m_useLUTLoc, 0);
-        glUniform3fv(colorLoc, 1, &Math3D::Vec3(0.0f, 0.8f, 1.0f).x); // Bright cyan indicator
+        Math3D::Vec3 walkerColor(0.0f, 0.8f, 1.0f);
+        glUniform3fv(colorLoc, 1, &walkerColor.x); // Bright cyan indicator
 
         float walkerMarker[] = {
             m_walkPos.x - 0.2f, m_walkPos.y, m_walkPos.z, 0.0f,
