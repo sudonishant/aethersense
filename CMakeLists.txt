@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(WiFi-Thermal-Spatial-Mapper VERSION 1.0.0 LANGUAGES CXX)
+project(AetherSense VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -43,24 +43,24 @@ target_link_libraries(wifi_scanner_cli PRIVATE wifi_core)
 # ==========================================
 # 3. NATIVE VISUALIZER TARGET (OpenGL/GLFW)
 # ==========================================
-add_executable(WiFi-Thermal-Spatial-Mapper
+add_executable(AetherSense
     src/main.cpp
     src/visualization/RenderEngine.cpp
 )
-target_link_libraries(WiFi-Thermal-Spatial-Mapper PRIVATE wifi_core)
+target_link_libraries(AetherSense PRIVATE wifi_core)
 
 if(WIN32)
-    target_compile_definitions(WiFi-Thermal-Spatial-Mapper PRIVATE SYSTEM_WINDOWS)
+    target_compile_definitions(AetherSense PRIVATE SYSTEM_WINDOWS)
     find_package(glfw3 CONFIG QUIET)
     if(glfw3_FOUND)
-        target_link_libraries(WiFi-Thermal-Spatial-Mapper PRIVATE glfw)
+        target_link_libraries(AetherSense PRIVATE glfw)
     else()
-        target_link_libraries(WiFi-Thermal-Spatial-Mapper PRIVATE glfw3)
+        target_link_libraries(AetherSense PRIVATE glfw3)
     endif()
-    target_link_libraries(WiFi-Thermal-Spatial-Mapper PRIVATE opengl32.lib User32.lib Gdi32.lib Shell32.lib)
+    target_link_libraries(AetherSense PRIVATE opengl32.lib User32.lib Gdi32.lib Shell32.lib)
 
 elseif(APPLE)
-    target_compile_definitions(WiFi-Thermal-Spatial-Mapper PRIVATE SYSTEM_MACOS)
+    target_compile_definitions(AetherSense PRIVATE SYSTEM_MACOS)
     find_package(glfw3 CONFIG QUIET)
     if(NOT glfw3_FOUND)
         find_package(glfw3 QUIET)
@@ -71,7 +71,7 @@ elseif(APPLE)
     find_library(IOKIT_FRAMEWORK IOKit REQUIRED)
     find_library(COREVIDEO_FRAMEWORK CoreVideo REQUIRED)
     
-    target_link_libraries(WiFi-Thermal-Spatial-Mapper PRIVATE 
+    target_link_libraries(AetherSense PRIVATE 
         ${OPENGL_FRAMEWORK} 
         ${COCOA_FRAMEWORK}
         ${IOKIT_FRAMEWORK}
@@ -79,27 +79,27 @@ elseif(APPLE)
     )
     
     if(glfw3_FOUND)
-        target_link_libraries(WiFi-Thermal-Spatial-Mapper PRIVATE glfw)
+        target_link_libraries(AetherSense PRIVATE glfw)
     else()
-        target_link_libraries(WiFi-Thermal-Spatial-Mapper PRIVATE "-lglfw")
+        target_link_libraries(AetherSense PRIVATE "-lglfw")
     endif()
 
 else()
-    target_compile_definitions(WiFi-Thermal-Spatial-Mapper PRIVATE SYSTEM_LINUX)
+    target_compile_definitions(AetherSense PRIVATE SYSTEM_LINUX)
     find_package(PkgConfig QUIET)
     if(PKG_CONFIG_FOUND)
         pkg_check_modules(GLFW glfw3)
     endif()
     
     if(GLFW_FOUND)
-        target_link_libraries(WiFi-Thermal-Spatial-Mapper PRIVATE 
+        target_link_libraries(AetherSense PRIVATE 
             GL 
             dl
             ${GLFW_LIBRARIES}
         )
-        target_include_directories(WiFi-Thermal-Spatial-Mapper PRIVATE ${GLFW_INCLUDE_DIRS})
+        target_include_directories(AetherSense PRIVATE ${GLFW_INCLUDE_DIRS})
     else()
         # Fallback raw links
-        target_link_libraries(WiFi-Thermal-Spatial-Mapper PRIVATE GL dl glfw)
+        target_link_libraries(AetherSense PRIVATE GL dl glfw)
     endif()
 endif()

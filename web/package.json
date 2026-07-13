@@ -1,7 +1,7 @@
 {
-  "name": "sudonishant-spatial-mapper-web",
+  "name": "aethersense-web",
   "version": "1.0.0",
-  "description": "High performance 3D WiFi Volumetric Spatial Mapper and Radarserved from native C++ daemon",
+  "description": "Volumetric 3D WiFi occupancy grid radar and spatial scanner dashboard.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

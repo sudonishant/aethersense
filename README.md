@@ -1,11 +1,11 @@
-# sudonishant // Spatial Mapper (WiFi Volumetric Radar)
+# 📡 AetherSense: WiFi 3D Volumetric Occupancy Radar & Spatial Scanner
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![C++](https://img.shields.io/badge/C%2B%2B-17-00599C?style=flat&logo=c%2B%2B)](https://isocpp.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D%2018.0.0-339933?style=flat&logo=node.js)](https://nodejs.org/)
-[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS-lightgrey.svg)](#)
+[![Three.js](https://img.shields.io/badge/Three.js-WebGL-black?style=flat&logo=three.js)](https://threejs.org/)
 
-An advanced, industry-grade spatial mapper and volumetric radar designed to query low-level Wi-Fi signal metrics in real-time, build volumetric occupancy grids, and render them inside a sleek, Apple-style 3D WebGL dashboard. The codebase provides direct native daemon bindings for C++ hardware scans, combined with an interactive telemetry visualization suite.
+An advanced, industry-grade wireless spatial mapping engine and volumetric occupancy radar. **AetherSense** scans real-time Wi-Fi beacon packets and radio frequency (RF) signal metrics, builds high-fidelity 3D occupancy grids, and visualizes RF propagation patterns through a premium, glassmorphic WebGL telemetry dashboard.
 
 ```mermaid
 graph TD
@@ -18,62 +18,96 @@ graph TD
 
 ---
 
-## Key Features
+## 🚀 Key Features
 
-*   **Apple-Inspired Aesthetic**: High-quality dark-mode UI, minimalist glassmorphism, responsive segmented controls, and layout.
-*   **Dual Telemetry Engines**:
-    *   **Real Card Mode**: Connects directly to hardware interfaces (`/proc/net/wireless` on Linux, CoreWLAN on macOS, Wlanapi on Windows) for millisecond-level signal tracking.
-    *   **Virtual Emu Mode**: Built-in wave-based signal simulator for instant offline mapping.
-*   **Volumetric 3D Shader**: High-performance Three.js pipeline translating signal intensity into clear thermal-gradient gradients (Ironbow, Rainbow, White/Black Hot).
-*   **Spatial Diagnostics**: CSI Monitor, real-time respiration/movement detection, classified structural counts, and automatic warning thresholds.
-*   **Robust disk storage**: Active mapping nodes are persisted locally with a debounced JSON transaction cache to optimize filesystem performance.
+*   **Holographic 3D Volumetric Rendering**: A high-performance WebGL (Three.js) viewport that maps wireless signal strength (RSSI/CSI) to a 3D thermal-gradient grid (featuring Ironbow, Rainbow, and Monochromatic presets).
+*   **Zero-Latency Native Daemon**: Low-level C++17 engine interfacing directly with OS network stacks:
+    *   **Linux**: Direct `/proc/net/wireless` and sockets polling.
+    *   **macOS**: Native CoreWLAN framework bridging.
+    *   **Windows**: Native Wlanapi service integration.
+*   **Dual Mode Telemetry**:
+    *   *Real Card Mode*: Active scanner interfacing with hardware for live physical diagnostics.
+    *   *Virtual Emu Mode*: Built-in wave propagation algorithm for simulated offline testing and walk-throughs.
+*   **Apple-Inspired TUI/GUI HUD**: High-fidelity dark mode styling, frosted-glass panels, segmented dashboard selectors, and interactive telemetry dials.
+*   **Diagnostic Overlays**: Real-time respiration/motion detection proxies, classified path counts, and automated threshold alerts.
 
 ---
 
-## Fast Start
+## 🛠️ Tech Stack
 
-We provide an automated setup script that installs dependencies, compiles the C++ scanner, and provisions the server automatically.
+| Module | Core Technology | Role |
+| --- | --- | --- |
+| **Daemon Engine** | C++17 / CMake | Gathers network signal frames with zero-overhead native loops. |
+| **Web Server** | Node.js / Express / ws | Manages low-latency WebSocket connection pipes. |
+| **3D Rendering** | Three.js / GLSL Shaders | Visualizes volumetric occupancy grids in a responsive viewport. |
+| **Theme & UI** | Vanilla CSS3 / HTML5 | Frosted glassmorphism dashboard controls and statistics. |
+
+---
+
+## 📥 Getting Started
+
+### Prerequisites
+
+Ensure you have a modern compiler supporting **C++17**, **CMake (>= 3.15)**, and **Node.js (>= 18.0.0)** installed.
+
+### Automatic Installation & Execution
+
+A unified shell script compiles the native C++ executable and configures the web application automatically.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/sudonishant/wifi-thermal-spatial-mapper.git
-cd wifi-thermal-spatial-mapper
+git clone https://github.com/sudonishant/aethersense.git
+cd aethersense
 
-# 2. Grant permissions and run setup
+# 2. Grant execute permissions and run setup
 chmod +x setup.sh
 ./setup.sh
 
-# 3. Start the dashboard
+# 3. Spin up the server and visualization dashboard
 npm --prefix web start
 ```
-Open **[http://localhost:8080](http://localhost:8080)** in your browser to view the mapping dashboard.
+
+Open **[http://localhost:8080](http://localhost:8080)** in your web browser to access the live dashboard controls.
 
 ---
 
-## Technical Stack
+## ⌨️ Telemetry Controls
 
-| Component | Technology | Description |
-| --- | --- | --- |
-| **Daemon Engine** | C++17 | Direct low-level OS API calls for zero-latency network scans. |
-| **Web Server** | Node.js (Express, ws) | Ultra-lightweight REST API & WebSocket pipeline. |
-| **Render Viewport** | WebGL (Three.js) | Volumetric spatial grid rendering and particle animations. |
-| **Theme System** | Pure CSS3 (Apple Design) | Minimalist layout, native system fonts, and layout tokens. |
-
----
-
-## Controls Reference
-
-| Control | Action |
+| Shortcut | Description |
 | --- | --- |
-| **3D MAPPING** Preset | Switches to Volumetric occupancy mode. |
-| **LOCATION TRACE** Preset | Displays historical walking trajectories. |
-| `W`, `A`, `S`, `D` | Orbit / Pan Camera in 3D Viewport. |
-| `Mouse Drag` | Look Around (Rotate perspective). |
-| `Up` / `Down` / `Left` / `Right` | Move the Virtual Walker across the scan grid. |
-| `SPACE` | Manually plot a new signal checkpoint. |
+| **`W` / `A` / `S` / `D`** | Orbit and Pan the 3D camera around the volumetric mapping grid. |
+| **`Up` / `Down` / `Left` / `Right`** | Drive the virtual mapping probe through the spatial grid (Virtual Mode). |
+| **`SPACEBAR`** | Log and plot a permanent coordinate signal checkpoint. |
+| **`Mouse Drag`** | Rotate perspectives in the WebGL viewport. |
+| **`3D MAPPING` UI Toggle** | Switch layout to a volumetric 3D thermal matrix. |
+| **`LOCATION TRACE` UI Toggle** | Render real-time spatial path tracking maps. |
 
 ---
 
-## License
+## 📁 Repository Structure
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. Created by [sudonishant](https://github.com/sudonishant).
+```text
+aethersense/
+├── CMakeLists.txt         # C++ build orchestrator
+├── LICENSE                # MIT License
+├── README.md              # Project documentation
+├── include/               # C++ Header declarations
+│   ├── WifiScanner.h
+│   └── RenderEngine.h
+├── src/                   # C++ Core source files
+│   ├── main.cpp
+│   └── core/
+├── setup.sh               # Automation compilation script
+└── web/                   # Node.js Server & WebGL Front-end
+    ├── server.js          # WebSocket server pipeline
+    ├── package.json
+    └── public/
+        ├── index.html     # Glassmorphic HUD template
+        └── app.js         # Three.js viewport loop
+```
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See [LICENSE](LICENSE) for more details. Designed & built by [sudonishant](https://github.com/sudonishant).
