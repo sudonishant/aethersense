@@ -263,10 +263,10 @@ function initGraphics() {
 
 function setupVirtualRoomLayout() {
   const wallMat = new THREE.MeshBasicMaterial({
-    color: 0x00f2fe,
+    color: 0x0a84ff, // Apple Blue structural highlights
     wireframe: true,
     transparent: true,
-    opacity: 0.04,
+    opacity: 0.18, // Visible translucent architecture layout!
     depthWrite: false
   });
 
@@ -275,7 +275,7 @@ function setupVirtualRoomLayout() {
   const w1Geo = new THREE.BoxGeometry(14, 1.8, 0.08);
   const w1 = new THREE.Mesh(w1Geo, wallMat);
   w1.position.set(-1, 0.9, -1);
-  // Do NOT add to scene, keeping them invisible for a clean blind RF scan!
+  scene.add(w1); // Render wall visually on screen!
   collisionWalls.push(w1);
   virtualWallMeshes.push(w1);
 
@@ -283,6 +283,7 @@ function setupVirtualRoomLayout() {
   const w2Geo = new THREE.BoxGeometry(0.08, 1.8, 8);
   const w2 = new THREE.Mesh(w2Geo, wallMat);
   w2.position.set(-4, 0.9, 3);
+  scene.add(w2); // Render wall visually on screen!
   collisionWalls.push(w2);
   virtualWallMeshes.push(w2);
 
@@ -290,6 +291,7 @@ function setupVirtualRoomLayout() {
   const w3Geo = new THREE.BoxGeometry(0.08, 1.8, 6);
   const w3 = new THREE.Mesh(w3Geo, wallMat);
   w3.position.set(4, 0.9, 2);
+  scene.add(w3); // Render wall visually on screen!
   collisionWalls.push(w3);
   virtualWallMeshes.push(w3);
 }
@@ -981,7 +983,7 @@ function drawVoxelNodeLocal(posVec, signalVal, currentRssi) {
 
   const nodeGroup = new THREE.Group();
   nodeGroup.position.copy(pos);
-  nodeGroup.userData = { signalStrength: signalVal };
+  nodeGroup.userData = { signalStrength: signalVal, rssi: currentRssi };
 
   // Background thermal glow sprite
   const hexColor = "#" + col.getHexString();

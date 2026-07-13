@@ -24,7 +24,13 @@ let scanHistory = [];
 if (fs.existsSync(historyFilePath)) {
   try {
     scanHistory = JSON.parse(fs.readFileSync(historyFilePath, 'utf8'));
-    console.log(`[Server] Loaded ${scanHistory.length} saved scanning nodes from history file.`);
+    if (scanHistory.length > 1500) {
+      scanHistory = scanHistory.slice(-1500); // keep only 1500 latest entries
+      fs.writeFileSync(historyFilePath, JSON.stringify(scanHistory));
+      console.log(`[Server] Pruned excessive nodes. Trimmed to ${scanHistory.length} nodes.`);
+    } else {
+      console.log(`[Server] Loaded ${scanHistory.length} saved scanning nodes from history file.`);
+    }
   } catch (e) {
     console.error('[Server] Failed to parse scan history database, resetting:', e);
     scanHistory = [];
