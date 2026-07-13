@@ -247,6 +247,12 @@ server.on('error', (err) => {
   }
 });
 
+wss.on('error', (err) => {
+  if (err.code !== 'EADDRINUSE') {
+    console.error('[WebSocket Server Error]', err);
+  }
+});
+
 // Start Listening
 server.listen(PORT, () => {
   console.log(`==================================================`);
