@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 250" width="100%" height="100%">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#05080c"/>
+  
+  <!-- Cyber Grid Lines -->
+  <g stroke="#0c1826" stroke-width="0.75">
+    <path d="M 0 50 L 800 50 M 0 100 L 800 100 M 0 150 L 800 150 M 0 200 L 800 200"/>
+    <path d="M 100 0 L 100 250 M 200 0 L 200 250 M 300 0 L 300 250 M 400 0 L 400 250 M 500 0 L 500 250 M 600 0 L 600 250 M 700 0 L 700 250"/>
+  </g>
+
+  <!-- 3D Radar Frustum Grid Pulse -->
+  <g transform="translate(120, 125)">
+    <!-- Scanning Radar Arc -->
+    <path d="M -60 -90 L 0 0 L 60 -90 A 108 108 0 0 0 -60 -90 Z" fill="url(#frustumGrad)" opacity="0.35">
+      <animateTransform 
+        attributeName="transform" 
+        type="rotate" 
+        values="-45;45;-45" 
+        dur="4s" 
+        repeatCount="indefinite"
+      />
+    </path>
+    <!-- Pulses -->
+    <circle r="40" fill="none" stroke="#38bdf8" stroke-width="1.25" opacity="0.3">
+      <animate attributeName="r" values="15;85;15" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0.1;0.8" dur="3s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Core Branding Text -->
+  <g transform="translate(250, 105)">
+    <text x="0" y="0" font-family="monospace" font-size="34" font-weight="900" fill="#38bdf8" letter-spacing="4">
+      AETHERSENSE
+      <animate attributeName="opacity" values="1;0.7;1" dur="4s" repeatCount="indefinite"/>
+    </text>
+    <text x="0" y="26" font-family="sans-serif" font-size="13" fill="#bae6fd" letter-spacing="2" opacity="0.85">
+      3D WIFI VOLUMETRIC OCCUPANCY RADAR
+    </text>
+  </g>
+
+  <!-- Live Signals Waveform (Pulsing vector chart) -->
+  <path d="M 250 190 Q 280 150 310 190 T 370 190 T 430 190 T 490 190 T 550 190 T 610 190 T 670 190 T 730 190" fill="none" stroke="#0284c7" stroke-width="2.5" opacity="0.4">
+    <animate attributeName="d" 
+      values="M 250 190 Q 280 155 310 190 T 370 190 T 430 190 T 490 190 T 550 190 T 610 190 T 670 190 T 730 190;
+              M 250 190 Q 280 225 310 190 T 370 190 T 430 190 T 490 190 T 550 190 T 610 190 T 670 190 T 730 190;
+              M 250 190 Q 280 155 310 190 T 370 190 T 430 190 T 490 190 T 550 190 T 610 190 T 670 190 T 730 190" 
+      dur="3.5s" repeatCount="indefinite"/>
+  </path>
+  <path d="M 250 190 Q 280 170 310 190 T 370 190 T 430 190 T 490 190 T 550 190 T 610 190 T 670 190 T 730 190" fill="none" stroke="#38bdf8" stroke-width="1.75">
+    <animate attributeName="d" 
+      values="M 250 190 Q 280 175 310 190 T 370 190 T 430 190 T 490 190 T 550 190 T 610 190 T 670 190 T 730 190;
+              M 250 190 Q 280 205 310 190 T 370 190 T 430 190 T 490 190 T 550 190 T 610 190 T 670 190 T 730 190;
+              M 250 190 Q 280 175 310 190 T 370 190 T 430 190 T 490 190 T 550 190 T 610 190 T 670 190 T 730 190" 
+      dur="2s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Gradient -->
+  <defs>
+    <linearGradient id="frustumGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>

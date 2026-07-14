@@ -1,9 +1,23 @@
+<p align="center">
+  <img src="screenshots/animated_banner.svg" width="100%" alt="AetherSense Animated Banner" />
+</p>
+
 # 📡 AetherSense: WiFi 3D Volumetric Occupancy Radar & Spatial Scanner
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![C++](https://img.shields.io/badge/C%2B%2B-17-00599C?style=flat&logo=c%2B%2B)](https://isocpp.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D%2018.0.0-339933?style=flat&logo=node.js)](https://nodejs.org/)
-[![Three.js](https://img.shields.io/badge/Three.js-WebGL-black?style=flat&logo=three.js)](https://threejs.org/)
+<p align="center">
+  <a href="https://render.com/deploy?repo=https://github.com/sudonishant/aethersense" target="_blank">
+    <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render"/>
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT" target="_blank">
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"/>
+  </a>
+  <img src="https://img.shields.io/badge/C%2B%2B-17-00599C?style=flat&logo=c%2B%2B" alt="C++"/>
+  <img src="https://img.shields.io/badge/Node.js-%3E%3D%2018.0.0-339933?style=flat&logo=node.js" alt="Node.js"/>
+  <img src="https://img.shields.io/badge/Three.js-WebGL-black?style=flat&logo=three.js" alt="Three.js"/>
+</p>
 
 An advanced, industry-grade wireless spatial mapping engine and volumetric occupancy radar. **AetherSense** scans real-time Wi-Fi beacon packets and radio frequency (RF) signal metrics, builds high-fidelity 3D occupancy grids, and visualizes RF propagation patterns through a premium, glassmorphic WebGL telemetry dashboard.
 
@@ -106,8 +120,30 @@ aethersense/
         └── app.js         # Three.js viewport loop
 ```
 
+## 🤝 Contributing
+
+Contributions make the open-source community an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## ⭐ Star History
+
+We appreciate your support! If you find this platform helpful, please consider leaving a star to help others discover it.
+
+<p align="center">
+  <a href="https://star-history.com/#sudonishant/aethersense&amp;Date" target="_blank">
+    <img src="https://api.star-history.com/svg?repos=sudonishant/aethersense&amp;type=Date" width="100%" alt="Star History Chart" />
+  </a>
+</p>
+
 ---
 
 ## 📄 License
 
-Distributed under the MIT License. See [LICENSE](LICENSE) for more details. Designed & built by [sudonishant](https://github.com/sudonishant).
+Distributed under the MIT License. See `LICENSE` for more details. Designed & built with 💻 by [sudonishant](https://github.com/sudonishant).
