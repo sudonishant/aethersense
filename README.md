@@ -1,149 +1,140 @@
 <p align="center">
-  <img src="screenshots/animated_banner.svg" width="100%" alt="AetherSense Animated Banner" />
+  <img src="screenshots/animated_banner.svg" width="100%" alt="AetherSense animated banner" />
 </p>
 
-# 📡 AetherSense: WiFi 3D Volumetric Occupancy Radar & Spatial Scanner
+# AetherSense
 
-<p align="center">
-  <a href="https://render.com/deploy?repo=https://github.com/sudonishant/aethersense" target="_blank">
-    <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render"/>
-  </a>
-</p>
+AetherSense is a C++17 Wi-Fi signal scanner paired with a Node.js/WebSocket dashboard. The browser UI turns RSSI-style measurements into an interactive Three.js scene with a virtual-emulation mode, walk paths, signal history, and saved voxel points.
 
-<p align="center">
-  <a href="https://opensource.org/licenses/MIT" target="_blank">
-    <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"/>
-  </a>
-  <img src="https://img.shields.io/badge/C%2B%2B-17-00599C?style=flat&logo=c%2B%2B" alt="C++"/>
-  <img src="https://img.shields.io/badge/Node.js-%3E%3D%2018.0.0-339933?style=flat&logo=node.js" alt="Node.js"/>
-  <img src="https://img.shields.io/badge/Three.js-WebGL-black?style=flat&logo=three.js" alt="Three.js"/>
-</p>
+> **What this is:** an experimental signal-visualization and mapping interface.
+> **What this is not:** a validated occupancy radar, CSI measurement system, security scanner, or production-ready sensing platform. The 3D walls, distance estimates, and “occupancy” visuals are heuristic or simulated and should not be treated as physical measurements.
 
-An advanced, industry-grade wireless spatial mapping engine and volumetric occupancy radar. **AetherSense** scans real-time Wi-Fi beacon packets and radio frequency (RF) signal metrics, builds high-fidelity 3D occupancy grids, and visualizes RF propagation patterns through a premium, glassmorphic WebGL telemetry dashboard.
+![AetherSense dashboard preview](screenshots/social_preview.jpg)
 
-```mermaid
-graph TD
-    A[Raw WiFi Beacon Packets] -->|OS Native API Queries| B(C++ Scanner Daemon)
-    B -->|Throttled JSON Stdout| C[Node.js WebSocket Server]
-    C -->|Real-time Synchronization| D[Web Client UI Dashboard]
-    D -->|Three.js & OrbitControls| E[Holographic 3D Spatial Grid]
-    E -->|Interactive Presets| F[Volumetric Map / Location Trace]
+## Current implementation
+
+- `src/core/WifiScanner.cpp` provides the native sampler. On Linux it reads `/proc/net/wireless`; when that file is unavailable or has no interface rows, it emits simulated metrics. The Linux path currently uses placeholder SSID/BSSID values rather than discovering the connected network name and access-point address.
+- `src/cli_main.cpp` emits newline-delimited JSON containing `rssi`, `linkQuality`, `noise`, `channel`, `ssid`, `bssid`, and `interfaceName`.
+- `web/server.js` serves `web/public`, exposes a WebSocket on the same HTTP server, starts the native CLI when it finds one, and otherwise emits a browser-facing simulated stream.
+- `web/public/app.js` contains the virtual RF model, Three.js scene, camera controls, palettes, walk modes, export/import controls, and scan-history synchronization.
+- Scan points are persisted as `web/scan_history.json` (ignored by Git) and retained in memory up to the server’s configured limits.
+
+## Architecture
+
+```text
+/proc/net/wireless (Linux, when available)
+        │
+        ▼
+C++17 wifi_scanner_cli ── newline-delimited JSON ──▶ Node.js server
+                                                        │
+                                      HTTP static files + WebSocket
+                                                        │
+                                                        ▼
+                                  Three.js browser dashboard
 ```
 
----
+If the native executable is not present, the Node server starts its own simulated signal stream. The dashboard’s **Virtual Emu** source is a separate browser-side model; it can be explored without a Wi-Fi adapter or native executable.
 
-## 🚀 Key Features
+## Requirements
 
-*   **Holographic 3D Volumetric Rendering**: A high-performance WebGL (Three.js) viewport that maps wireless signal strength (RSSI/CSI) to a 3D thermal-gradient grid (featuring Ironbow, Rainbow, and Monochromatic presets).
-*   **Zero-Latency Native Daemon**: Low-level C++17 engine interfacing directly with OS network stacks:
-    *   **Linux**: Direct `/proc/net/wireless` and sockets polling.
-    *   **macOS**: Native CoreWLAN framework bridging.
-    *   **Windows**: Native Wlanapi service integration.
-*   **Dual Mode Telemetry**:
-    *   *Real Card Mode*: Active scanner interfacing with hardware for live physical diagnostics.
-    *   *Virtual Emu Mode*: Built-in wave propagation algorithm for simulated offline testing and walk-throughs.
-*   **Apple-Inspired TUI/GUI HUD**: High-fidelity dark mode styling, frosted-glass panels, segmented dashboard selectors, and interactive telemetry dials.
-*   **Diagnostic Overlays**: Real-time respiration/motion detection proxies, classified path counts, and automated threshold alerts.
+- Node.js 18 or newer (declared in `web/package.json`)
+- npm
+- CMake 3.15 or newer and a C++17 compiler for the native scanner
+- A Linux `/proc/net/wireless` interface for Linux hardware readings; otherwise use the simulated modes
+- A WebGL-capable modern browser for the 3D view
 
----
+The full native visualizer target additionally requires platform graphics dependencies such as GLFW/OpenGL. The web dashboard does not require that target: the CLI target is sufficient for the Node server.
 
-## 🛠️ Tech Stack
+## Quick start
 
-| Module | Core Technology | Role |
-| --- | --- | --- |
-| **Daemon Engine** | C++17 / CMake | Gathers network signal frames with zero-overhead native loops. |
-| **Web Server** | Node.js / Express / ws | Manages low-latency WebSocket connection pipes. |
-| **3D Rendering** | Three.js / GLSL Shaders | Visualizes volumetric occupancy grids in a responsive viewport. |
-| **Theme & UI** | Vanilla CSS3 / HTML5 | Frosted glassmorphism dashboard controls and statistics. |
-
----
-
-## 📥 Getting Started
-
-### Prerequisites
-
-Ensure you have a modern compiler supporting **C++17**, **CMake (>= 3.15)**, and **Node.js (>= 18.0.0)** installed.
-
-### Automatic Installation & Execution
-
-A unified shell script compiles the native C++ executable and configures the web application automatically.
+The commands below avoid the setup script’s optional system-package installation and build only the CLI needed by the dashboard.
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/sudonishant/aethersense.git
 cd aethersense
 
-# 2. Grant execute permissions and run setup
-chmod +x setup.sh
-./setup.sh
+# Install the locked Node dependencies
+npm ci --prefix web
 
-# 3. Spin up the server and visualization dashboard
+# Build the native scanner (optional; omit these two commands for simulation only)
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target wifi_scanner_cli
+
+# Start the HTTP/WebSocket dashboard
 npm --prefix web start
 ```
 
-Open **[http://localhost:8080](http://localhost:8080)** in your web browser to access the live dashboard controls.
+Open <http://localhost:8080>. The server automatically finds `build/bin/wifi_scanner_cli` after the CMake build. To use another port, set the `PORT` environment variable before starting the server:
 
----
+```bash
+PORT=8090 npm --prefix web start
+```
 
-## ⌨️ Telemetry Controls
+To run without native build tools, install the web dependencies and start the server directly. It will log that it is using simulated web mode:
 
-| Shortcut | Description |
-| --- | --- |
-| **`W` / `A` / `S` / `D`** | Orbit and Pan the 3D camera around the volumetric mapping grid. |
-| **`Up` / `Down` / `Left` / `Right`** | Drive the virtual mapping probe through the spatial grid (Virtual Mode). |
-| **`SPACEBAR`** | Log and plot a permanent coordinate signal checkpoint. |
-| **`Mouse Drag`** | Rotate perspectives in the WebGL viewport. |
-| **`3D MAPPING` UI Toggle** | Switch layout to a volumetric 3D thermal matrix. |
-| **`LOCATION TRACE` UI Toggle** | Render real-time spatial path tracking maps. |
+```bash
+npm ci --prefix web
+npm --prefix web start
+```
 
----
+`setup.sh` is an alternative convenience script. It can run `apt`, `dnf`, `pacman`, or Homebrew commands when you opt into dependency installation, so inspect it and use it only when you intend to modify the host system.
 
-## 📁 Repository Structure
+## Dashboard controls
+
+- **Real Card** consumes metrics arriving from the native/WebSocket stream. **Virtual Emu** computes a browser-side signal model with configurable router position and wall attenuation.
+- **3D Mapping** and **Location Trace** change the visualization workflow; manual, auto-pilot, and LiDAR-labelled walk modes control the virtual walker. The LiDAR label is a UI mode, not a hardware LiDAR integration.
+- Palette, path-loss, reference RSSI, transmit-power, shielding, frequency, FPS, and voxel-resolution controls affect the visualization or emulation calculations.
+- **Clear Voxel Map** sends a `clear` WebSocket message and clears the persisted history. **Export JSON** and **Load Map** operate on browser-side map data.
+- Camera orbit uses the mouse; the UI also exposes keyboard movement and waypoint controls. The exact key bindings are implemented in `web/public/app.js` and may change as the interface evolves.
+
+## Data, privacy, and network safety
+
+- The server has no login, authorization, origin check, or TLS configuration. Its WebSocket accepts `drop` and `clear` messages from connected clients. Do not expose it to an untrusted network or put it directly on the public Internet.
+- `scan_history.json` is written under `web/` and can contain saved map coordinates and signal metadata. It is ignored by Git but remains on the host until removed; treat it as sensitive local telemetry.
+- Hardware readings may reveal nearby network metadata. Use the tool only on systems and networks you are authorized to inspect, and avoid sharing exported maps or logs without reviewing them.
+- The dashboard loads Three.js and OrbitControls from public CDNs in `web/public/index.html`, so a browser needs network access unless those assets are vendored locally.
+- The server’s default `PORT` is `8080`; binding is not restricted to loopback by the application. Use a firewall or a local-only execution environment when appropriate.
+
+## Project layout
 
 ```text
 aethersense/
-├── CMakeLists.txt         # C++ build orchestrator
-├── LICENSE                # MIT License
-├── README.md              # Project documentation
-├── include/               # C++ Header declarations
-│   ├── WifiScanner.h
-│   └── RenderEngine.h
-├── src/                   # C++ Core source files
-│   ├── main.cpp
-│   └── core/
-├── setup.sh               # Automation compilation script
-└── web/                   # Node.js Server & WebGL Front-end
-    ├── server.js          # WebSocket server pipeline
-    ├── package.json
-    └── public/
-        ├── index.html     # Glassmorphic HUD template
-        └── app.js         # Three.js viewport loop
+├── CMakeLists.txt              # C++17 targets and platform link settings
+├── include/                    # Native scanner, buffer, math, and renderer headers
+├── src/
+│   ├── cli_main.cpp            # JSON-line scanner process
+│   ├── core/WifiScanner.cpp    # Platform scanner and Linux fallback
+│   └── visualization/          # Optional native OpenGL visualizer
+├── setup.sh                    # Optional dependency installation and build helper
+├── screenshots/                # Repository-provided preview assets
+└── web/
+    ├── package.json            # Node scripts and runtime dependencies
+    ├── package-lock.json       # Locked npm dependency graph
+    ├── server.js               # HTTP/WebSocket server and scanner process bridge
+    └── public/                  # Browser dashboard assets
 ```
 
-## 🤝 Contributing
+## Verification
 
-Contributions make the open-source community an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+There is currently no automated test suite or CI configuration in this repository. Useful local checks after making changes are:
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+```bash
+node --check web/server.js
+cmake -S . -B build
+cmake --build build --target wifi_scanner_cli
+npm ci --prefix web
+```
 
----
+The CMake build depends on the compiler and platform libraries installed on the host. A successful JavaScript syntax check does not verify browser rendering or native Wi-Fi access.
 
-## ⭐ Star History
+## Contributing
 
-We appreciate your support! If you find this platform helpful, please consider leaving a star to help others discover it.
+1. Fork the project.
+2. Create a focused feature branch.
+3. Run the applicable checks above.
+4. Describe platform assumptions, hardware requirements, and privacy implications in the pull request.
+5. Open a pull request with the smallest useful change.
 
-<p align="center">
-  <a href="https://star-history.com/#sudonishant/aethersense&amp;Date" target="_blank">
-    <img src="https://api.star-history.com/svg?repos=sudonishant/aethersense&amp;type=Date" width="100%" alt="Star History Chart" />
-  </a>
-</p>
+## License
 
----
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more details. Designed & built with 💻 by [sudonishant](https://github.com/sudonishant).
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for details. Designed and built by [sudonishant](https://github.com/sudonishant).
